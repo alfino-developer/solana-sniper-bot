@@ -1,0 +1,6 @@
+{
+  "build": [
+    "chmod +x start.sh"
+  ],
+  "start": "bash start.sh"
+}
