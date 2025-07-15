@@ -1,4 +1,3 @@
-
 import os
 import requests
 import json
@@ -10,7 +9,7 @@ from telegram.ext import CommandHandler, CallbackQueryHandler, CallbackContext, 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 TELEGRAM_USER_ID = int(os.getenv("TELEGRAM_USER_ID"))
 PRIVATE_KEY = os.getenv("WALLET_PRIVATE_KEY")
-RPC_URL = os.getenv("RPC", "https://api.mainnet-beta.solana.com")
+RPC_URL = os.getenv("RPC_URL", "https://api.mainnet-beta.solana.com")  # ✅ perbaikan di sini
 
 # INIT
 bot = Bot(token=BOT_TOKEN)
@@ -32,13 +31,16 @@ def send_alert(token_address):
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    bot.send_message(chat_id=TELEGRAM_USER_ID, text=f"Token baru terdeteksi:
-{token_address}", reply_markup=reply_markup)
+    bot.send_message(chat_id=TELEGRAM_USER_ID, text=f"Token baru terdeteksi:\n{token_address}", reply_markup=reply_markup)
 
 # --- TELEGRAM HANDLER ---
 
 def start(update: Update, context: CallbackContext):
     update.message.reply_text("Bot sniper aktif dan siap mendeteksi token baru!")
+
+def check(update: Update, context: CallbackContext):
+    check_new_tokens()
+    update.message.reply_text("✅ Token dummy dikirim (testing).")
 
 def button(update: Update, context: CallbackContext):
     query = update.callback_query
@@ -48,15 +50,16 @@ def button(update: Update, context: CallbackContext):
     amount = data[1]
     token_address = "_".join(data[2:])
     if action == "buy":
-        # Simulasi pembelian
         query.edit_message_text(text=f"✅ BUY ${amount} untuk {token_address} berhasil (simulasi).")
-        # Nanti di sini ditambahkan logic pembelian real via Solana RPC dan sign tx
+        # Tambahkan logic transaksi real di sini
 
 def main():
     updater = Updater(BOT_TOKEN)
     dp = updater.dispatcher
     dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("check", check))  # ✅ Tambahan untuk test manual
     dp.add_handler(CallbackQueryHandler(button))
+    check_new_tokens()  # ✅ Trigger dummy token saat bot start
     updater.start_polling()
     updater.idle()
 
